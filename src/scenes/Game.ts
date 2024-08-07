@@ -10,10 +10,6 @@ export class Game extends Scene {
 
     preload() {
         this.load.setPath('assets');
-        // this.load.tilemapTiledJSON("map", '10x10-test.json')
-        // this.load.image("hex-tiles", "hex-tiles.png")
-        // this.load.image("village", "village.png")
-
         this.load.tilemapTiledJSON("map", "map.json")
         this.load.image("water", "water.png")
         this.load.image("ground/villages", "tileset.png")
@@ -36,13 +32,6 @@ export class Game extends Scene {
         this.tileMap = this.createMap()
         this.initiliazeVillages()
         this.initMapMovement(this.cameras.main)
-
-        // this.input.on("pointerdown", pointer => {
-        //     console.log(pointer)
-        //     // console.log(this.hexToPixel(320, 0))
-        //     console.log(ground.getTileAtWorldXY(pointer.worldX, pointer.worldY))
-        // })
-
     }
 
     update(_: number, delta: number) {
@@ -79,13 +68,17 @@ export class Game extends Scene {
                     useHandCursor: true
                 })
                 // villageSprite.setData('village_info', village)
-                villageSprite.on('pointerover', (pointer) => {
+                villageSprite.on('pointerover', () => {
                     this.showVillageInfo(village);
                 });
 
                 villageSprite.on('pointerout', () => {
                     this.hideVillageInfo();
                 });
+
+                villageSprite.on("pointerdown", () => {
+                    this.scene.start("Village", { villageId: village.id })
+                })
             }
         })
     }
@@ -106,7 +99,7 @@ export class Game extends Scene {
     }
 
     initMapMovement(camera: Phaser.Cameras.Scene2D.Camera) {
-        this.input.on("pointermove", function (p) {
+        this.input.on("pointermove", function (p: any) {
             if (!p.isDown) return;
 
             camera.scrollX -= (p.x - p.prevPosition.x) / camera.zoom;
@@ -135,12 +128,5 @@ export class Game extends Scene {
 
         this.controls = new Phaser.Cameras.Controls.SmoothedKeyControl(controlConfig);
         camera.setBounds(0, 0, 2040, 1920)
-    }
-    hexToPixel(hexX: number, hexY: number): { x: number, y: number } {
-        const tileWidth = 64;
-        const tileHeight = 64;
-        const x = tileWidth * (hexX + 0.5 * (hexY % 2));
-        const y = tileHeight * (3 / 4) * hexY;
-        return { x, y };
     }
 }
