@@ -10,12 +10,12 @@ export class Game extends Scene {
 
     preload() {
         this.load.setPath('assets');
-        this.load.tilemapTiledJSON("map", "map.json")
-        this.load.image("water", "water.png")
-        this.load.image("ground/villages", "tileset.png")
-        this.load.image("mountains", "mountains.png")
-        this.load.image("villageBasic", "village_basic.png")
-        this.load.image("villageAdvanced", "village_advanced.png")
+        this.load.tilemapTiledJSON("map", "/map/map.json")
+        this.load.image("water", "/map/water.png")
+        this.load.image("ground/villages", "map/tileset.png")
+        this.load.image("mountains", "map/mountains.png")
+        this.load.image("villageBasic", "map/village_basic.png")
+        this.load.image("villageAdvanced", "map/village_advanced.png")
     }
 
     create() {
@@ -85,7 +85,7 @@ export class Game extends Scene {
 
     showVillageInfo(village: any) {
         // Get the attached data
-        const info = `Village Name: ${village.name}\nOwner Name: ${village.owner_name}\nPoint: ${village.point}`;
+        const info = `Village Name: ${village.name}\nOwner Name: ${village.ownerName}\nPoint: ${village.point}`;
 
         // Update the text object and position it near the village sprite
         this.infoText.setText(info);
