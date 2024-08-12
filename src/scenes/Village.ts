@@ -7,6 +7,15 @@ interface VillageData {
 const tileWidth = 120
 const tileHeight = 140
 
+const buildingTypeToTile: Map<number, number> = {
+  3: 58, // lumberjack
+  2: 85, // iron ore pit
+  4: 90, // farm
+  1: 86, // headquarter
+  5: 9,  // clay pit
+  6: 45, // storage
+}
+
 export default class Village extends Scene {
   villageData: VillageData
   groundLayer: Phaser.Tilemaps.TilemapLayer | null
@@ -23,7 +32,7 @@ export default class Village extends Scene {
   preload() {
     this.load.setPath('assets');
     this.load.tilemapTiledJSON("village", "/village/village.json")
-    this.load.image("tileset", "/village/texture.png")
+    this.load.image("tileset", "texture.png")
     this.load.image("lumberjack", "/village/sprites/mill_crane.png")
   }
 
@@ -33,7 +42,6 @@ export default class Village extends Scene {
     this.game.canvas.style.cursor = "pointer"
     this.initVillage()
     this.handleOnClick()
-    this.createLevelText("2", 2, 1)
     // after village informations loades, create the village
   }
 
@@ -48,10 +56,10 @@ export default class Village extends Scene {
     fetch(`http://localhost:8080/villages/${this.villageData.villageId}`).then(response => response.json()).then(data => {
       console.log(data)
       let buildings = data.Building
-      buildings = buildings.filter(building => building.buildingType === 3)
-
-      for (let lumberjack of buildings) {
-        this.groundLayer?.putTileAt(57, lumberjack.tileX, lumberjack.tileY)
+      for (let building of buildings) {
+        const tileIndex = buildingTypeToTile[building.buildingType]
+        this.groundLayer?.putTileAt(tileIndex, building.tileX, building.tileY)
+        this.createLevelText(building.level, building.tileX, building.tileY)
       }
     })
   }
@@ -66,15 +74,15 @@ export default class Village extends Scene {
   }
 
   createLevelText(level: string, tileX: number, tileY: number) {
-    const tile = this.groundLayer?.getTileAt(tileX + 1, tileY + 1)
+    const tile = this.groundLayer?.getTileAt(tileX - 1, tileY - 1)
     if (tile === undefined) {
       return console.error("no tiles found", { level, tileX, tileY })
     }
-    const text = this.add.text(tile.pixelX, tile.pixelY, level, {
-      font: "32px Courier",
+    const text = this.add.text(tile.getCenterX() - 10, tile.getCenterY() + 70, level, {
+      font: "16px Courier",
       color: "#fffffff"
     })
 
-    text.setOrigin(0.5, 0.5)
+    // text.setOrigin(0.1, 0.1)
   }
 }
