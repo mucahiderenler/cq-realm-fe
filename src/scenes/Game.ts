@@ -1,5 +1,6 @@
 
 import { Scene } from 'phaser';
+import { GameMap, Village } from '../types/map';
 const tileWidth = 120
 const tileHeight = 140
 
@@ -14,35 +15,26 @@ export class Game extends Scene {
 
   preload() {
     this.load.setPath('assets');
-    this.load.tilemapTiledJSON("map", "/map/newMap.json")
+    this.load.tilemapTiledJSON("map", "/map/map.json")
     this.load.image("tileset", "texture.png")
+    this.load.image("barbar", "/map/sprites/barbar.png")
+    this.load.image("village1", "/map/sprites/village1.png")
+    this.load.image("village2", "/map/sprites/village2.png")
   }
 
   create() {
-    this.infoText = this.add.text(10, 10, '', {
-      fontSize: '10px',
-      backgroundColor: 'rgba(1, 0, 0, 0.7)',
-      padding: {
-        x: 11,
-        y: 6
-      }
-    });
-    this.infoText.setVisible(false);
-    this.infoText.setDepth(10)
-    this.tileMap = this.createMap()
+    this.initTooltipText()
+    // sets this.groundLayer and this.tileMap
+    this.createMap()
     this.initiliazeVillages()
     this.initMapMovement(this.cameras.main)
-    this.input.on("pointerdown", pointer => {
-      console.log(pointer.position)
-    })
   }
 
   update(_: number, delta: number) {
     this.controls.update(delta);
   }
 
-  createMap(): Phaser.Tilemaps.Tilemap {
-
+  createMap() {
     const map = this.make.tilemap({ key: "map", tileWidth: tileWidth, tileHeight: tileHeight })
     const tileSet = map.addTilesetImage("hexagon_tiles", "tileset")
     if (tileSet === null) {
@@ -50,60 +42,62 @@ export class Game extends Scene {
 
     }
     this.groundLayer = map.createLayer("Ground", tileSet, 0, 0)
-
-    return map
+    this.tileMap = map
   }
   initiliazeVillages() {
-    // request villages from backend and load all
-    fetch('http://localhost:8080/map').then(response => response.json()).then((data) => {
+    fetch('http://localhost:8080/map').then(response => response.json()).then((data: GameMap) => {
       for (let village of data.villages) {
         let villageSprite: Phaser.GameObjects.Sprite
-        let tile: Phaser.Tilemaps.Tile | undefined
-        if (village.point >= 3000) {
-          tile = this.groundLayer?.putTileAt(86, village.x, village.y)
-        } else {
-          tile = this.groundLayer?.putTileAt(87, village.x, village.y)
+        const tile = this.groundLayer?.getTileAt(village.x, village.y)
+        if (tile === undefined) {
+          console.error("Tile not found for village:", village)
+          continue
         }
-        let interactiveVillage = this.add.circle(tile?.pixelX + 60, tile?.pixelY + (70), tile?.width / 2)
-
-        interactiveVillage.setInteractive({
-          useHandCursor: true
-        })
-        //  villageSprite.setData('village_info', village)
-        interactiveVillage.on('pointerover', () => {
-          this.showVillageInfo(village, interactiveVillage);
-        });
-
-        interactiveVillage.on('pointerout', () => {
-          this.hideVillageInfo();
-        });
-
-        interactiveVillage.on("pointerdown", () => {
-          this.scene.start("Village", { villageId: village.id })
-        })
+        const pixelX = tile?.pixelX + (tileWidth / 2)
+        const pixelY = tile?.pixelY + (tileHeight / 2)
+        if (village.ownerID === -1) {
+          villageSprite = this.add.sprite(pixelX, pixelY, "barbar")
+        }
+        else if (village.point >= 3000) {
+          villageSprite = this.add.sprite(pixelX, pixelY, "village2")
+        } else {
+          villageSprite = this.add.sprite(pixelX, pixelY, "village1")
+        }
+        this.makeVillageInteractive(village, villageSprite)
       }
     })
   }
+  makeVillageInteractive(village: Village, villageSprite: Phaser.GameObjects.Sprite) {
+    villageSprite.setInteractive({
+      useHandCursor: true
+    })
+    villageSprite.on('pointerover', () => {
+      this.showVillageInfo(village, villageSprite);
+    });
 
-  showVillageInfo(village: any, interactiveVillage: any) {
+    villageSprite.on('pointerout', () => {
+      this.infoText.setVisible(false);
+    });
+
+    villageSprite.on("pointerdown", () => {
+      this.scene.start("Village", { villageId: village.id })
+    })
+
+  }
+  showVillageInfo(village: Village, villageSprite: Phaser.GameObjects.Sprite) {
     // Get the attached data
     const info = `Village Name: ${village.name}\nOwner Name: ${village.ownerName}\nPoint: ${village.point}`;
 
     // Update the text object and position it near the village sprite
     this.infoText.setText(info);
-    this.infoText.setPosition(interactiveVillage.x, interactiveVillage.y);
+    this.infoText.setPosition(villageSprite.x, villageSprite.y);
     this.infoText.setVisible(true);
   }
 
-  hideVillageInfo() {
-    // Hide the text object
-    this.infoText.setVisible(false);
-  }
 
   initMapMovement(camera: Phaser.Cameras.Scene2D.Camera) {
     this.input.on("pointermove", function (p: any) {
       if (!p.isDown) return;
-
       camera.scrollX -= (p.x - p.prevPosition.x) / camera.zoom;
       camera.scrollY -= (p.y - p.prevPosition.y) / camera.zoom;
     });
@@ -130,5 +124,19 @@ export class Game extends Scene {
 
     this.controls = new Phaser.Cameras.Controls.SmoothedKeyControl(controlConfig);
     // camera.setBounds(0, 0, 2040, 1920)
+  }
+
+  initTooltipText() {
+    this.infoText = this.add.text(10, 10, '', {
+      fontSize: '10px',
+      backgroundColor: 'rgba(1, 0, 0, 0.7)',
+      padding: {
+        x: 11,
+        y: 6
+      }
+    });
+    this.infoText.setVisible(false);
+    this.infoText.setDepth(10)
+
   }
 }
