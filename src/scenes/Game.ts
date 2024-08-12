@@ -1,6 +1,7 @@
 
 import { Scene } from 'phaser';
-import { GameMap, Village } from '../types/map';
+import { GameMap } from '../types/gameMap';
+import { Village } from '../types/village';
 const tileWidth = 120
 const tileHeight = 140
 
@@ -24,7 +25,6 @@ export class Game extends Scene {
 
   create() {
     this.initTooltipText()
-    // sets this.groundLayer and this.tileMap
     this.createMap()
     this.initiliazeVillages()
     this.initMapMovement(this.cameras.main)
@@ -96,7 +96,7 @@ export class Game extends Scene {
 
 
   initMapMovement(camera: Phaser.Cameras.Scene2D.Camera) {
-    this.input.on("pointermove", function (p: any) {
+    this.input.on("pointermove", function (p: Phaser.Input.Pointer) {
       if (!p.isDown) return;
       camera.scrollX -= (p.x - p.prevPosition.x) / camera.zoom;
       camera.scrollY -= (p.y - p.prevPosition.y) / camera.zoom;
