@@ -2,16 +2,17 @@
 import { Scene } from 'phaser';
 import { GameMap } from '../types/gameMap';
 import { Village } from '../types/village';
+import { EventBus } from '../EventBus';
 const tileWidth = 120
 const tileHeight = 140
 
-export class Game extends Scene {
+export class Map extends Scene {
   infoText: Phaser.GameObjects.Text;
   controls: Phaser.Cameras.Controls.SmoothedKeyControl;
   tileMap: Phaser.Tilemaps.Tilemap
   groundLayer: Phaser.Tilemaps.TilemapLayer | null
   constructor() {
-    super('Game');
+    super('Map');
   }
 
   preload() {
@@ -28,6 +29,7 @@ export class Game extends Scene {
     this.createMap()
     this.initiliazeVillages()
     this.initMapMovement(this.cameras.main)
+    EventBus.emit('current-scene-ready', this);
   }
 
   update(_: number, delta: number) {
@@ -80,6 +82,7 @@ export class Game extends Scene {
     });
 
     villageSprite.on("pointerdown", () => {
+
       this.scene.start("Village", { villageId: village.id })
     })
 

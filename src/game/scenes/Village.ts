@@ -1,5 +1,6 @@
 import { Scene } from 'phaser'
 import { FullVillage } from '../types/village'
+import { EventBus } from '../EventBus'
 interface VillageData {
   villageId: number
 }
@@ -15,10 +16,11 @@ const buildingTypeToTile: { [key: number]: string } = {
   5: "clayPit",
   6: "storage",
 }
-export default class Village extends Scene {
+export class Village extends Scene {
   villageData: VillageData
   groundLayer: Phaser.Tilemaps.TilemapLayer | null
   map: Phaser.Tilemaps.Tilemap
+  infoText: Phaser.GameObjects.Text;
   constructor() {
     super('Village')
   }
@@ -41,8 +43,10 @@ export default class Village extends Scene {
   }
 
   create() {
+    this.initTooltipText()
     this.initMap()
     this.initVillage()
+    EventBus.emit('current-scene-ready', this);
   }
 
   initMap() {
@@ -52,7 +56,8 @@ export default class Village extends Scene {
   }
 
   initVillage() {
-    fetch(`http://localhost:8080/villages/${this.villageData.villageId}`).then(response => response.json()).then((data: FullVillage) => {
+    // 2 should be changedto villageData.villageId in future
+    fetch(`http://localhost:8080/villages/${2}`).then(response => response.json()).then((data: FullVillage) => {
       let buildings = data.Building
       for (let building of buildings) {
         const buildingSpriteName = buildingTypeToTile[building.buildingType]
@@ -65,17 +70,21 @@ export default class Village extends Scene {
         const pixelY = tile?.pixelY + (tileHeight / 2)
         const buildingSprite = this.add.sprite(pixelX, pixelY, buildingSpriteName)
         this.createLevelText(String(building.level), pixelX, pixelY)
-        this.makeBuildingInteractive(buildingSprite)
+        this.makeBuildingInteractive(building.name, buildingSprite)
       }
     })
   }
 
-  makeBuildingInteractive(building: Phaser.GameObjects.Sprite) {
-    building.setInteractive({
+  makeBuildingInteractive(buildingName:string, buildingSprite: Phaser.GameObjects.Sprite) {
+    buildingSprite.setInteractive({
       useHandCursor: true
     })
-    building.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
-      console.log(pointer)
+    buildingSprite.on("pointerover", (pointer: Phaser.Input.Pointer) => {
+      this.showBuildingInfo(buildingName, buildingSprite)
+    })
+
+    buildingSprite.on("pointerout", (pointer: Phaser.Input.Pointer) => {
+      this.infoText.setVisible(false)
     })
   }
 
@@ -85,4 +94,27 @@ export default class Village extends Scene {
       color: "#fffffff"
     })
   }
+
+  showBuildingInfo(buildingName: string, buildingSprite: Phaser.GameObjects.Sprite) {
+
+    // Update the text object and position it near the village sprite
+    this.infoText.setText(buildingName);
+    this.infoText.setPosition(buildingSprite.x, buildingSprite.y);
+    this.infoText.setVisible(true);
+  }
+
+  initTooltipText() {
+    this.infoText = this.add.text(10, 10, '', {
+      fontSize: '10px',
+      backgroundColor: 'rgba(1, 0, 0, 0.7)',
+      padding: {
+        x: 11,
+        y: 6
+      }
+    });
+    this.infoText.setVisible(false);
+    this.infoText.setDepth(10)
+
+  }
+
 }
