@@ -2,7 +2,7 @@
 import { createMemoryHistory, createRouter, RouterOptions } from 'vue-router'
 import HomeView from './../components/HomeView.vue'
 import MapView from './../components/MapView.vue'
-import { usePhaserStore } from '../store/phaser';
+import { usePhaserStore } from '../store/phaserStore';
 import { toRaw } from 'vue';
 
 const routes: RouterOptions["routes"] = [

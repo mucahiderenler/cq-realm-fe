@@ -58,7 +58,7 @@ export class Village extends Scene {
   initVillage() {
     // 2 should be changedto villageData.villageId in future
     fetch(`http://localhost:8080/villages/${2}`).then(response => response.json()).then((data: FullVillage) => {
-      let buildings = data.Building
+      let buildings = data.buildings
       for (let building of buildings) {
         const buildingSpriteName = buildingTypeToTile[building.buildingType]
         const tile = this.groundLayer?.getTileAt(building.tileX, building.tileY)

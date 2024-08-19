@@ -23,6 +23,6 @@ export interface Building {
 }
 
 export interface FullVillage {
-  Village: Village,
-  Building: Building[]
+  village: Village,
+  buildings: Building[]
 }

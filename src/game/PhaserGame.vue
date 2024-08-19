@@ -2,7 +2,7 @@
 import { onMounted, onUnmounted  } from 'vue';
 import { EventBus } from './EventBus';
 import StartGame from './main';
-import { usePhaserStore } from '../store/phaser';
+import { usePhaserStore } from '../store/phaserStore';
 const phaserStore = usePhaserStore()
 
 onMounted(() => {
