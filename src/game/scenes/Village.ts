@@ -1,6 +1,9 @@
 import { Scene } from 'phaser'
-import { FullVillage } from '../types/village'
+import { Building, FullVillage } from '../types/village'
 import { EventBus } from '../EventBus'
+import { useVillageStore } from '../../store/villageStore'
+
+
 interface VillageData {
   villageId: number
 }
@@ -47,6 +50,9 @@ export class Village extends Scene {
     this.initMap()
     this.initVillage()
     EventBus.emit('current-scene-ready', this);
+    EventBus.on("village-loaded", () => {
+      this.initVillage()
+    })
   }
 
   initMap() {
@@ -56,23 +62,21 @@ export class Village extends Scene {
   }
 
   initVillage() {
-    // 2 should be changedto villageData.villageId in future
-    fetch(`http://localhost:8080/villages/${2}`).then(response => response.json()).then((data: FullVillage) => {
-      let buildings = data.buildings
-      for (let building of buildings) {
-        const buildingSpriteName = buildingTypeToTile[building.buildingType]
-        const tile = this.groundLayer?.getTileAt(building.tileX, building.tileY)
-        if (tile === undefined) {
-          console.error("Cant find the tile for building: ", building)
-          continue
-        }
-        const pixelX = tile?.pixelX + (tileWidth / 2)
-        const pixelY = tile?.pixelY + (tileHeight / 2)
-        const buildingSprite = this.add.sprite(pixelX, pixelY, buildingSpriteName)
-        this.createLevelText(String(building.level), pixelX, pixelY)
-        this.makeBuildingInteractive(building.name, buildingSprite)
+    const villageStore = useVillageStore()
+    let buildings = villageStore.buildings as Building[]
+    for (let building of buildings) {
+      const buildingSpriteName = buildingTypeToTile[building.buildingType]
+      const tile = this.groundLayer?.getTileAt(building.tileX, building.tileY)
+      if (tile === undefined) {
+        console.error("Cant find the tile for building: ", building)
+        continue
       }
-    })
+      const pixelX = tile?.pixelX + (tileWidth / 2)
+      const pixelY = tile?.pixelY + (tileHeight / 2)
+      const buildingSprite = this.add.sprite(pixelX, pixelY, buildingSpriteName)
+      this.createLevelText(String(building.level), pixelX, pixelY)
+      this.makeBuildingInteractive(building.name, buildingSprite)
+    }
   }
 
   makeBuildingInteractive(buildingName:string, buildingSprite: Phaser.GameObjects.Sprite) {

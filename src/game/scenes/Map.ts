@@ -82,8 +82,7 @@ export class Map extends Scene {
     });
 
     villageSprite.on("pointerdown", () => {
-
-      this.scene.start("Village", { villageId: village.id })
+      EventBus.emit("change-village", {villageId: village.id})      
     })
 
   }

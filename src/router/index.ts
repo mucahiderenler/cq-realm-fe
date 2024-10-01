@@ -6,7 +6,7 @@ import { usePhaserStore } from '../store/phaserStore';
 import { toRaw } from 'vue';
 
 const routes: RouterOptions["routes"] = [
-    { path: '/', component: HomeView, beforeEnter: () => {
+    { path: '/', name: "village",  component: HomeView, beforeEnter: () => {
         // change game scene to village view
         loadScene("Village")
     } },
