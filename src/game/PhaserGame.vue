@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted  } from 'vue';
+import { onMounted } from 'vue';
 import { EventBus } from './EventBus';
 import StartGame from './main';
 import { usePhaserStore } from '../store/phaserStore';
@@ -28,18 +28,10 @@ onMounted(() => {
 
 });
 
-onUnmounted(() => {
-
-    if (phaserStore.game)
-    {
-        phaserStore.game = null
-    }
-
-});
 
 
 </script>
 
 <template>
-    <div v-if="phaserStore.shouldRender" id="game-container"></div>
+    <div v-show="phaserStore.shouldRender" id="game-container"></div>
 </template>

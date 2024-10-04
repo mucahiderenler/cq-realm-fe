@@ -1,4 +1,4 @@
-import { AUTO, Game, Scale } from 'phaser';
+import { AUTO, Game } from 'phaser';
 import { Village } from './scenes/Village'
 import { Map } from './scenes/Map'
 //  Find out more information about the Game Config at:
@@ -9,10 +9,6 @@ const config: Phaser.Types.Core.GameConfig = {
     height: 1100,
     parent: 'game-container',
     backgroundColor: '#808080',
-    scale: {
-        mode: Scale.FIT,
-        autoCenter: Scale.CENTER_BOTH
-    },
     scene: [
         Village,
         Map,
