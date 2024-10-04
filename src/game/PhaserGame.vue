@@ -4,8 +4,10 @@ import { EventBus } from './EventBus';
 import StartGame from './main';
 import { usePhaserStore } from '../store/phaserStore';
 import { useRouter } from 'vue-router';
-const phaserStore = usePhaserStore()
 import { useVillageStore } from '../store/villageStore';
+import { Building } from './types/village';
+
+const phaserStore = usePhaserStore()
 const villageStore = useVillageStore()
 const router = useRouter()
 
@@ -20,6 +22,9 @@ onMounted(() => {
         router.push({name: "village"})
     } )
 
+    EventBus.on('go-building',(building: Building) => {
+        router.push({name: building.name.toLowerCase(), params: {buildingId: building.id}})
+    })
 
 });
 
@@ -36,5 +41,5 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <div id="game-container"></div>
+    <div v-if="phaserStore.shouldRender" id="game-container"></div>
 </template>

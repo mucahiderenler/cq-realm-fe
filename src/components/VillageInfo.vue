@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { useVillageStore } from '../store/villageStore';
-
 const store = useVillageStore()
 </script>
 

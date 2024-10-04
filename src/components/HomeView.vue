@@ -7,7 +7,10 @@ const villageStore = useVillageStore()
 
 
 onMounted(async() => {
+    
+
    try { 
+
     if (villageStore.village === void 0 || villageStore.village.id !== villageStore.currentVillageSelected) {
         // get village information
         const villageId = villageStore.currentVillageSelected || 2 // it shouldn't be 2 this should come from player info later on

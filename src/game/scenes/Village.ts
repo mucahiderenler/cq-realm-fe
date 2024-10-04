@@ -75,20 +75,24 @@ export class Village extends Scene {
       const pixelY = tile?.pixelY + (tileHeight / 2)
       const buildingSprite = this.add.sprite(pixelX, pixelY, buildingSpriteName)
       this.createLevelText(String(building.level), pixelX, pixelY)
-      this.makeBuildingInteractive(building.name, buildingSprite)
+      this.makeBuildingInteractive(building, buildingSprite)
     }
   }
 
-  makeBuildingInteractive(buildingName:string, buildingSprite: Phaser.GameObjects.Sprite) {
+  makeBuildingInteractive(building: Building, buildingSprite: Phaser.GameObjects.Sprite) {
     buildingSprite.setInteractive({
       useHandCursor: true
     })
-    buildingSprite.on("pointerover", (pointer: Phaser.Input.Pointer) => {
-      this.showBuildingInfo(buildingName, buildingSprite)
+    buildingSprite.on("pointerover", () => {
+      this.showBuildingInfo(building.name, buildingSprite)
     })
 
-    buildingSprite.on("pointerout", (pointer: Phaser.Input.Pointer) => {
+    buildingSprite.on("pointerout", () => {
       this.infoText.setVisible(false)
+    })
+
+    buildingSprite.on("pointerdown", () => {
+      EventBus.emit("go-building", building)
     })
   }
 

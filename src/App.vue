@@ -2,7 +2,6 @@
 import Navigation from './components/Navigation.vue';
 import PhaserGame from './game/PhaserGame.vue';
 
-
 </script>
 
 <template>
