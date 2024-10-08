@@ -16,7 +16,7 @@ const routes: RouterOptions["routes"] = [
         loadScene("Map")
      } 
     },
-    { path: '/headquarter', name: "headquarter", component: HqView, beforeEnter: () => {
+    { path: '/headquarter/:buildingId', name: "headquarter", component: HqView, beforeEnter: () => {
         hidePhaser()
     } }
 ]

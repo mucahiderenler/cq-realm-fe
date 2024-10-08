@@ -1,19 +1,52 @@
 <script setup lang="ts">
+import { computed, onMounted, reactive, ref } from 'vue';
+import { useRoute } from 'vue-router';
+import { useVillageStore } from '../store/villageStore';
+
+const route = useRoute()
+const villageStore = useVillageStore()
 const hqImage = "/assets/texture.png";
 
+const hqDetails = reactive({
+  buildingSpeed: 0,
+  upgradeTime: 0,
+  upgradeCosts: {wood: 0, clay: 0, iron: 0},
+  currentLevel: 0,
+  neededPopulation: 0
+})
+
+const enoughWoodForUpgrade = computed(() => {
+  return villageStore.resources.wood >= hqDetails.upgradeCosts.wood
+}) 
+const enoughClayForUpgrade = computed(() => {
+  return villageStore.resources.clay >= hqDetails.upgradeCosts.clay
+}) 
+const enoughIronForUpgrade = computed(() => {
+  return villageStore.resources.iron >= hqDetails.upgradeCosts.iron
+}) 
+
+onMounted(async() => {
+  const buildingId = route.params.buildingId
+  const currentVillageId = villageStore.currentVillageSelected
+  const response = await fetch(`http://localhost:8080/villages/${currentVillageId}/building/${buildingId}`)
+  const respJSON = await response.json()
+  Object.assign(hqDetails, respJSON)
+})
+
+
 const upgradeBuilding = () => {
-  alert("Upgrading the headquarters...");
+  if (enoughWoodForUpgrade && enoughClayForUpgrade && enoughIronForUpgrade) {
+    alert("Upgrade has been started")
+  } else {
+    alert("Not enough resources");
+  }
 };
 
-const manageResources = () => {
-  alert("Managing resources...");
-};
 </script>
 
 
 <template>
     <div class="headquarters-page">
-      <!-- Header -->
       <header class="hq-header">
         <h1>Headquarters</h1>
       </header>
@@ -27,20 +60,18 @@ const manageResources = () => {
       <section class="hq-details">
         <h2>Building Details</h2>
         <p>
-          Headquarters is the center of the village. From here, you can manage upgrades, monitor resources, and oversee the growth of your empire.
+          Headquarters is the center of the village. Upgrade this building to decrease building time of construction.
         </p>
   
-        <!-- Example details (can be dynamic) -->
         <ul>
-          <li><strong>Level:</strong> 5</li>
-          <li><strong>Upgrade Time:</strong> 30 minutes</li>
-          <li><strong>Next Level Benefits:</strong> Increased resource management capacity</li>
+          <li><strong>Level:</strong> {{hqDetails.currentLevel}} </li>
+          <li><strong>Upgrade Time:</strong> {{ hqDetails.upgradeTime }} seconds</li>
+          <li><strong>Next Level Benefits:</strong> Building time decrease {{hqDetails.buildingSpeed}}% </li>
+          <li><strong>Upgrade Cost:</strong> Wood: {{hqDetails.upgradeCosts?.wood}} Clay: {{ hqDetails.upgradeCosts?.clay }} Iron: {{ hqDetails.upgradeCosts?.iron }} </li>
         </ul>
   
-        <!-- Buttons to upgrade or manage -->
         <div class="hq-actions">
           <button @click="upgradeBuilding">Upgrade</button>
-          <button @click="manageResources">Manage Resources</button>
         </div>
       </section>
     </div>
