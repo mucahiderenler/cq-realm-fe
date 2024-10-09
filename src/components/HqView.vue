@@ -7,7 +7,15 @@ const route = useRoute()
 const villageStore = useVillageStore()
 const hqImage = "/assets/texture.png";
 
-const hqDetails = reactive({
+interface BuildingDetails {
+  buildingSpeed: number
+  upgradeTime: number
+  upgradeCosts: { wood:number, clay: number, iron: number}
+  currentLevel: number
+  neededPopulation: number
+}
+
+const hqDetails: BuildingDetails = reactive({
   buildingSpeed: 0,
   upgradeTime: 0,
   upgradeCosts: {wood: 0, clay: 0, iron: 0},
@@ -29,7 +37,7 @@ onMounted(async() => {
   const buildingId = route.params.buildingId
   const currentVillageId = villageStore.currentVillageSelected
   const response = await fetch(`http://localhost:8080/villages/${currentVillageId}/building/${buildingId}`)
-  const respJSON = await response.json()
+  const respJSON: BuildingDetails = await response.json()
   Object.assign(hqDetails, respJSON)
 })
 
