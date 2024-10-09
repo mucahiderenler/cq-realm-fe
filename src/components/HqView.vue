@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue';
+import { computed, onMounted, reactive } from 'vue';
 import { useRoute } from 'vue-router';
 import { useVillageStore } from '../store/villageStore';
 
@@ -23,28 +23,45 @@ const hqDetails: BuildingDetails = reactive({
   neededPopulation: 0
 })
 
-const enoughWoodForUpgrade = computed(() => {
+const buildingId = route.params.buildingId
+const currentVillageId = villageStore.currentVillageSelected
+
+const enoughWoodForUpgrade = computed<boolean>(() => {
   return villageStore.resources.wood >= hqDetails.upgradeCosts.wood
 }) 
-const enoughClayForUpgrade = computed(() => {
+const enoughClayForUpgrade = computed<boolean>(() => {
   return villageStore.resources.clay >= hqDetails.upgradeCosts.clay
 }) 
-const enoughIronForUpgrade = computed(() => {
+const enoughIronForUpgrade = computed<boolean>(() => {
   return villageStore.resources.iron >= hqDetails.upgradeCosts.iron
 }) 
 
 onMounted(async() => {
-  const buildingId = route.params.buildingId
-  const currentVillageId = villageStore.currentVillageSelected
-  const response = await fetch(`http://localhost:8080/villages/${currentVillageId}/building/${buildingId}`)
-  const respJSON: BuildingDetails = await response.json()
-  Object.assign(hqDetails, respJSON)
+  try {  
+    const response = await fetch(`http://localhost:8080/villages/${currentVillageId}/building/${buildingId}`)
+    const respJSON: BuildingDetails = await response.json()
+    Object.assign(hqDetails, respJSON)
+  } catch (error) {
+    console.error("failed to load building details: ", error)
+  }
 })
 
 
-const upgradeBuilding = () => {
-  if (enoughWoodForUpgrade && enoughClayForUpgrade && enoughIronForUpgrade) {
-    alert("Upgrade has been started")
+const upgradeBuilding = async() => {
+  if (enoughWoodForUpgrade.value && enoughClayForUpgrade.value && enoughIronForUpgrade.value) {
+    try {
+        const response = await fetch(`http://localhost:8080/building/${buildingId}/upgrade`, {
+            method: "POST",
+            body: JSON.stringify({
+                villageId: currentVillageId.toString()
+            })
+        })
+        const respJSON = await response.json()
+        console.log(respJSON)
+        alert("Upgrade has been started")
+    } catch (error) {
+        console.error("failed to start upgrading building: ", error)    
+    }
   } else {
     alert("Not enough resources");
   }

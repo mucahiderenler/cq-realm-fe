@@ -23,7 +23,7 @@ onMounted(() => {
     } )
 
     EventBus.on('go-building',(building: Building) => {
-        router.push({name: building.name.toLowerCase(), params: {buildingId: building.id}})
+        router.push({name: building.name.toLowerCase(), params: {buildingId: building.buildingType}})
     })
 
 });
