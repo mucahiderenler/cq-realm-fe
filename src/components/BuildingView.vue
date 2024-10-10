@@ -8,7 +8,8 @@ const villageStore = useVillageStore()
 const hqImage = "/assets/texture.png";
 
 interface BuildingDetails {
-  buildingSpeed: number
+  buildingAdvantage: number
+  buildingNextAdvantage: number
   upgradeTime: number
   upgradeCosts: { wood:number, clay: number, iron: number}
   currentLevel: number
@@ -16,7 +17,8 @@ interface BuildingDetails {
 }
 
 const hqDetails: BuildingDetails = reactive({
-  buildingSpeed: 0,
+  buildingAdvantage: 0,
+  buildingNextAdvantage: 0,
   upgradeTime: 0,
   upgradeCosts: {wood: 0, clay: 0, iron: 0},
   currentLevel: 0,
@@ -24,6 +26,7 @@ const hqDetails: BuildingDetails = reactive({
 })
 
 const buildingId = route.params.buildingId
+const building = villageStore.buildings.find(b => b.buildingID === +buildingId)
 const currentVillageId = villageStore.currentVillageSelected
 
 const enoughWoodForUpgrade = computed<boolean>(() => {
@@ -73,7 +76,7 @@ const upgradeBuilding = async() => {
 <template>
     <div class="headquarters-page">
       <header class="hq-header">
-        <h1>Headquarters</h1>
+        <h1>{{ building?.name }}</h1>
       </header>
   
       <!-- Image of the headquarters -->
@@ -90,8 +93,9 @@ const upgradeBuilding = async() => {
   
         <ul>
           <li><strong>Level:</strong> {{hqDetails.currentLevel}} </li>
+          <li><strong>Current Benefit</strong> Building time decrease {{hqDetails.buildingAdvantage}}% </li>
           <li><strong>Upgrade Time:</strong> {{ hqDetails.upgradeTime }} seconds</li>
-          <li><strong>Next Level Benefits:</strong> Building time decrease {{hqDetails.buildingSpeed}}% </li>
+          <li><strong>Next Level Benefits:</strong> Building time decrease {{hqDetails.buildingNextAdvantage}}% </li>
           <li><strong>Upgrade Cost:</strong> Wood: {{hqDetails.upgradeCosts?.wood}} Clay: {{ hqDetails.upgradeCosts?.clay }} Iron: {{ hqDetails.upgradeCosts?.iron }} </li>
         </ul>
   

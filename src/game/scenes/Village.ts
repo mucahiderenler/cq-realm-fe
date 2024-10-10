@@ -11,7 +11,7 @@ interface VillageData {
 const tileWidth = 120
 const tileHeight = 140
 
-const buildingTypeToTile: { [key: number]: string } = {
+const buildingIdToTile: { [key: number]: string } = {
   3: "lumberjack",
   2: "ironOrePit",
   4: "farm",
@@ -65,7 +65,7 @@ export class Village extends Scene {
     const villageStore = useVillageStore()
     let buildings = villageStore.buildings as Building[]
     for (let building of buildings) {
-      const buildingSpriteName = buildingTypeToTile[building.buildingType]
+      const buildingSpriteName = buildingIdToTile[building.buildingType]
       const tile = this.groundLayer?.getTileAt(building.tileX, building.tileY)
       if (tile === undefined) {
         console.error("Cant find the tile for building: ", building)

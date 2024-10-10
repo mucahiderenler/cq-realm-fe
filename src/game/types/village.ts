@@ -13,10 +13,11 @@ export interface Building {
   buildTime: string
   buildingType: number
   id: number
+  buildingID: number
   lastUpgrade: string
   level: number
   name: string
-  productionRate: number | null // Buildings like headquarter has no production rate (might change later)
+  productionRate: number | null 
   tileX: number
   tileY: number
   villageID: number

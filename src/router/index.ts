@@ -2,7 +2,7 @@
 import { createMemoryHistory, createRouter, RouterOptions } from 'vue-router'
 import HomeView from './../components/HomeView.vue'
 import MapView from './../components/MapView.vue'
-import HqView from '../components/HqView.vue';
+import BuildingView from '../components/BuildingView.vue';
 import { usePhaserStore } from '../store/phaserStore';
 import { toRaw } from 'vue';
 
@@ -16,7 +16,7 @@ const routes: RouterOptions["routes"] = [
         loadScene("Map")
      } 
     },
-    { path: '/headquarter/:buildingId', name: "headquarter", component: HqView, beforeEnter: () => {
+    { path: '/building/:buildingId', name: "building", component: BuildingView, beforeEnter: () => {
         hidePhaser()
     } }
 ]

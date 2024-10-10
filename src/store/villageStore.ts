@@ -17,6 +17,7 @@ interface Building {
     villageID: number
     name: string
     buildingType: number
+    buildingID: number
     level: number
     productionRate: number
     buildTime: string
