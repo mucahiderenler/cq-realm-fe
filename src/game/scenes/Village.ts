@@ -1,5 +1,5 @@
 import { Scene } from 'phaser'
-import { Building, FullVillage } from '../types/village'
+import { Building} from '../types/village'
 import { EventBus } from '../EventBus'
 import { useVillageStore } from '../../store/villageStore'
 
@@ -10,15 +10,9 @@ interface VillageData {
 
 const tileWidth = 120
 const tileHeight = 140
+let previousTileSelected: Phaser.Tilemaps.Tile | null = null
+let previousTileHovered: Phaser.Tilemaps.Tile | null = null
 
-const buildingIdToTile: { [key: number]: string } = {
-  3: "lumberjack",
-  2: "ironOrePit",
-  4: "farm",
-  1: "headquarter",
-  5: "clayPit",
-  6: "storage",
-}
 export class Village extends Scene {
   villageData: VillageData
   groundLayer: Phaser.Tilemaps.TilemapLayer | null
@@ -37,12 +31,6 @@ export class Village extends Scene {
     this.load.setPath('assets');
     this.load.tilemapTiledJSON("village", "/village/village.json")
     this.load.image("tileset", "texture.png")
-    this.load.image("lumberjack", "/village/sprites/lumberjack.png")
-    this.load.image("headquarter", "/village/sprites/headquarter.png")
-    this.load.image("ironOrePit", "/village/sprites/iron_ore_pit.png")
-    this.load.image("farm", "/village/sprites/farm.png")
-    this.load.image("clayPit", "/village/sprites/clay_pit.png")
-    this.load.image("storage", "/village/sprites/storage.png")
   }
 
   create() {
@@ -59,13 +47,41 @@ export class Village extends Scene {
     this.map = this.add.tilemap("village", tileWidth, tileHeight)
     this.map.addTilesetImage("tileset", "tileset")
     this.groundLayer = this.map.createLayer("Ground", "tileset")
+
+    this.groundLayer?.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
+      const tile = this.map.getTileAtWorldXY(pointer.worldX, pointer.worldY)
+      if (tile) {
+        if (previousTileSelected) {
+          previousTileSelected.tint = 0xffffff
+        }
+        tile.tint = 0.65 * 0xffffff;
+        previousTileSelected = tile
+        EventBus.emit("empty-grid-selected", {x: tile.x, y: tile.y})
+      }
+    })
+
+    this.groundLayer?.on("pointermove", (pointer: Phaser.Input.Pointer) => {
+
+      const tile = this.map.getTileAtWorldXY(pointer.worldX, pointer.worldY)
+      if (tile && tile.properties.hasBuilding !== true) {
+        if (previousTileHovered) {
+          previousTileHovered.tint = 0xffffff
+        } 
+
+        tile.tint = 0.9 * 0x00ff00
+        previousTileHovered = tile
+      }
+    })
+
+    this.groundLayer?.setInteractive({
+      useHandCursor: true
+    })
   }
 
   initVillage() {
     const villageStore = useVillageStore()
     let buildings = villageStore.buildings as Building[]
     for (let building of buildings) {
-      const buildingSpriteName = buildingIdToTile[building.buildingType]
       const tile = this.groundLayer?.getTileAt(building.tileX, building.tileY)
       if (tile === undefined) {
         console.error("Cant find the tile for building: ", building)
@@ -73,16 +89,22 @@ export class Village extends Scene {
       }
       const pixelX = tile?.pixelX + (tileWidth / 2)
       const pixelY = tile?.pixelY + (tileHeight / 2)
-      const buildingSprite = this.add.sprite(pixelX, pixelY, buildingSpriteName)
+      const buildingSprite = this.add.sprite(pixelX, pixelY)
       this.createLevelText(String(building.level), pixelX, pixelY)
       this.makeBuildingInteractive(building, buildingSprite)
+      tile.properties.hasBuilding = true
     }
   }
 
   makeBuildingInteractive(building: Building, buildingSprite: Phaser.GameObjects.Sprite) {
     buildingSprite.setInteractive({
-      useHandCursor: true
+      useHandCursor: true,
+      hitArea: new Phaser.Geom.Circle(0, 0, tileWidth / 2),
+      hitAreaCallback: Phaser.Geom.Circle.Contains
     })
+
+    buildingSprite.depth = 2 
+
     buildingSprite.on("pointerover", () => {
       this.showBuildingInfo(building.name, buildingSprite)
     })
@@ -104,7 +126,6 @@ export class Village extends Scene {
   }
 
   showBuildingInfo(buildingName: string, buildingSprite: Phaser.GameObjects.Sprite) {
-
     // Update the text object and position it near the village sprite
     this.infoText.setText(buildingName);
     this.infoText.setPosition(buildingSprite.x, buildingSprite.y);

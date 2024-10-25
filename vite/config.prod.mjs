@@ -1,6 +1,8 @@
 import { fileURLToPath, URL } from 'node:url'
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue'
+import Components from 'unplugin-vue-components/vite'
+import {BootstrapVueNextResolver} from 'bootstrap-vue-next'
 
 const phasermsg = () => {
     return {
@@ -22,7 +24,10 @@ export default defineConfig({
     base: './',
     plugins: [
         vue(),
-        phasermsg()
+        phasermsg(),
+        Components({
+            resolvers:[BootstrapVueNextResolver()],
+        })
     ],
     resolve: {
         alias: {

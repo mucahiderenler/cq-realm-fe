@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import Navigation from './components/Navigation.vue';
 import PhaserGame from './game/PhaserGame.vue';
-
 </script>
 
 <template>
@@ -9,3 +8,4 @@ import PhaserGame from './game/PhaserGame.vue';
     <main><RouterView/></main>
     <PhaserGame/>
 </template>
+

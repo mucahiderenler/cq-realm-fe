@@ -8,9 +8,11 @@ const villageStore = useVillageStore()
 
 onMounted(async() => {
     
+    EventBus.on("empty-grid-selected", (gridPosition:{x: number, y:number}) => {
+        console.log(gridPosition)
+    })
 
    try { 
-
     if (villageStore.village === void 0 || villageStore.village.id !== villageStore.currentVillageSelected) {
         // get village information
         const villageId = villageStore.currentVillageSelected || 2 // it shouldn't be 2 this should come from player info later on

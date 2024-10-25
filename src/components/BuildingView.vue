@@ -5,7 +5,6 @@ import { useVillageStore } from '../store/villageStore';
 
 const route = useRoute()
 const villageStore = useVillageStore()
-const hqImage = "/assets/texture.png";
 
 interface BuildingDetails {
   buildingAdvantage: number
@@ -16,7 +15,7 @@ interface BuildingDetails {
   neededPopulation: number
 }
 
-const hqDetails: BuildingDetails = reactive({
+const buildingDetails: BuildingDetails = reactive({
   buildingAdvantage: 0,
   buildingNextAdvantage: 0,
   upgradeTime: 0,
@@ -27,40 +26,40 @@ const hqDetails: BuildingDetails = reactive({
 
 const buildingId = route.params.buildingId
 const building = villageStore.buildings.find(b => b.buildingID === +buildingId)
+const buildingImage = `/assets/village/sprites/${building?.name.toLowerCase().replace(" ", "_")}.png`;
 const currentVillageId = villageStore.currentVillageSelected
 
-const enoughWoodForUpgrade = computed<boolean>(() => {
-  return villageStore.resources.wood >= hqDetails.upgradeCosts.wood
-}) 
-const enoughClayForUpgrade = computed<boolean>(() => {
-  return villageStore.resources.clay >= hqDetails.upgradeCosts.clay
-}) 
-const enoughIronForUpgrade = computed<boolean>(() => {
-  return villageStore.resources.iron >= hqDetails.upgradeCosts.iron
-}) 
 
 onMounted(async() => {
   try {  
     const response = await fetch(`http://localhost:8080/villages/${currentVillageId}/building/${buildingId}`)
     const respJSON: BuildingDetails = await response.json()
-    Object.assign(hqDetails, respJSON)
+    Object.assign(buildingDetails, respJSON)
   } catch (error) {
     console.error("failed to load building details: ", error)
   }
 })
 
 
+const enoughWoodForUpgrade = computed<boolean>(() => {
+  return villageStore.resources.wood >= buildingDetails.upgradeCosts.wood
+}) 
+const enoughClayForUpgrade = computed<boolean>(() => {
+  return villageStore.resources.clay >= buildingDetails.upgradeCosts.clay
+}) 
+const enoughIronForUpgrade = computed<boolean>(() => {
+  return villageStore.resources.iron >= buildingDetails.upgradeCosts.iron
+}) 
+
 const upgradeBuilding = async() => {
   if (enoughWoodForUpgrade.value && enoughClayForUpgrade.value && enoughIronForUpgrade.value) {
     try {
-        const response = await fetch(`http://localhost:8080/building/${buildingId}/upgrade`, {
+        await fetch(`http://localhost:8080/building/${buildingId}/upgrade`, {
             method: "POST",
             body: JSON.stringify({
                 villageId: currentVillageId.toString()
             })
         })
-        const respJSON = await response.json()
-        console.log(respJSON)
         alert("Upgrade has been started")
     } catch (error) {
         console.error("failed to start upgrading building: ", error)    
@@ -74,32 +73,30 @@ const upgradeBuilding = async() => {
 
 
 <template>
-    <div class="headquarters-page">
-      <header class="hq-header">
+    <div class="buildings-page">
+      <header class="building-header">
         <h1>{{ building?.name }}</h1>
       </header>
   
-      <!-- Image of the headquarters -->
-      <div class="hq-image-container">
-        <img :src="hqImage" alt="Headquarters" class="hq-image" />
+      <div class="building-image-container">
+        <img :src="buildingImage" :alt="building?.name" class="building-image" />
       </div>
   
-      <!-- Headquarters details -->
-      <section class="hq-details">
+      <section class="building-details">
         <h2>Building Details</h2>
         <p>
-          Headquarters is the center of the village. Upgrade this building to decrease building time of construction.
+          buildings is the center of the village. Upgrade this building to decrease building time of construction.
         </p>
   
         <ul>
-          <li><strong>Level:</strong> {{hqDetails.currentLevel}} </li>
-          <li><strong>Current Benefit</strong> Building time decrease {{hqDetails.buildingAdvantage}}% </li>
-          <li><strong>Upgrade Time:</strong> {{ hqDetails.upgradeTime }} seconds</li>
-          <li><strong>Next Level Benefits:</strong> Building time decrease {{hqDetails.buildingNextAdvantage}}% </li>
-          <li><strong>Upgrade Cost:</strong> Wood: {{hqDetails.upgradeCosts?.wood}} Clay: {{ hqDetails.upgradeCosts?.clay }} Iron: {{ hqDetails.upgradeCosts?.iron }} </li>
+          <li><strong>Level:</strong> {{buildingDetails.currentLevel}} </li>
+          <li><strong>Current Benefit</strong> Building time decrease {{buildingDetails.buildingAdvantage}}% </li>
+          <li><strong>Upgrade Time:</strong> {{ buildingDetails.upgradeTime }} seconds</li>
+          <li><strong>Next Level Benefits:</strong> Building time decrease {{buildingDetails.buildingNextAdvantage}}% </li>
+          <li><strong>Upgrade Cost:</strong> Wood: {{buildingDetails.upgradeCosts?.wood}} Clay: {{ buildingDetails.upgradeCosts?.clay }} Iron: {{ buildingDetails.upgradeCosts?.iron }} </li>
         </ul>
   
-        <div class="hq-actions">
+        <div class="building-actions">
           <button @click="upgradeBuilding">Upgrade</button>
         </div>
       </section>
@@ -108,51 +105,51 @@ const upgradeBuilding = async() => {
 
 
 <style scoped>
-.headquarters-page {
+.buildings-page {
   max-width: 800px;
   margin: 0 auto;
   text-align: center;
 }
 
-.hq-header {
+.building-header {
   margin-top: 20px;
   font-size: 2em;
 }
 
-.hq-image-container {
+.building-image-container {
   margin: 20px 0;
 }
 
-.hq-image {
+.building-image {
   max-width: 100%;
   height: auto;
 }
 
-.hq-details {
+.building-details {
   background-color: #f4f4f9;
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
-.hq-details h2 {
+.building-details h2 {
   margin-bottom: 10px;
 }
 
-.hq-details ul {
+.building-details ul {
   list-style-type: none;
   padding: 0;
 }
 
-.hq-details ul li {
+.building-details ul li {
   margin: 10px 0;
 }
 
-.hq-actions {
+.building-actions {
   margin-top: 20px;
 }
 
-.hq-actions button {
+.building-actions button {
   background-color: #007bff;
   color: white;
   border: none;
@@ -162,7 +159,7 @@ const upgradeBuilding = async() => {
   margin: 5px;
 }
 
-.hq-actions button:hover {
+.building-actions button:hover {
   background-color: #0056b3;
 }
 </style>

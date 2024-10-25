@@ -22,8 +22,3 @@ export interface Building {
   tileY: number
   villageID: number
 }
-
-export interface FullVillage {
-  village: Village,
-  buildings: Building[]
-}
